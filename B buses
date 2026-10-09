@@ -1,0 +1,83 @@
+
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+
+struct Bus {
+    ll s, t;
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, m;
+    ll l, x, y;
+    cin >> n >> m >> l >> x >> y;
+
+    vector<Bus> buses(n);
+
+    for (int i = 0; i < n; i++) {
+        cin >> buses[i].s >> buses[i].t;
+    }
+
+    vector<pair<ll, int>> people(m);
+
+    for (int i = 0; i < m; i++) {
+        cin >> people[i].first;
+        people[i].second = i;
+    }
+
+    sort(buses.begin(), buses.end(),
+         [](const Bus& a, const Bus& b) {
+             return a.s < b.s;
+         });
+
+    sort(people.begin(), people.end());
+
+    // Maximum value of t*(x-y) + s*y comes first.
+    priority_queue<tuple<ll, ll, ll>> pq;
+
+    vector<double> ans(m);
+    int j = 0;
+
+    for (auto [p, id] : people) {
+        while (j < n && buses[j].s <= p) {
+            ll s = buses[j].s;
+            ll t = buses[j].t;
+
+            if (t >= p) {
+                ll key = t * (x - y) + s * y;
+                pq.push({key, t, s});
+            }
+
+            j++;
+        }
+
+        while (!pq.empty() && get<1>(pq.top()) < p) {
+            pq.pop();
+        }
+
+        double best = (double)(l - p) / y;
+
+        if (!pq.empty()) {
+            ll t = get<1>(pq.top());
+            ll s = get<2>(pq.top());
+
+            best = min(best,
+                       (double)(t - s) / x
+                       + (double)(l - t) / y);
+        }
+
+        ans[id] = best;
+    }
+
+    cout << fixed << setprecision(10);
+
+    for (double v : ans) {
+        cout << v << '\n';
+    }
+
+    return 0;
+}
